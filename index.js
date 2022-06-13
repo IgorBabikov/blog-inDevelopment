@@ -1,9 +1,13 @@
-const express = require('express')
-const mongoose = require('mongoose')
-require('dotenv').config()
-const jwt = require('jsonwebtoken')
+import express from 'express'
+import mongoose  from 'mongoose'
+import dotenv from 'dotenv'
+import jwt from 'jsonwebtoken'
+import { registerValidation } from './validations/auth.js'
+import {validationResult} from 'express-validator'
+
 
 const app = express()
+dotenv.config()
 const port = process.env.PORT || 3000
 const secretKey = process.env.SECRET_KEY
 const login = process.env.LOGIN
@@ -14,23 +18,17 @@ mongoose.connect(`mongodb://${login}:${password}@n1-c2-mongodb-clevercloud-custo
 .catch(() => console.log('error'))
 
 
-
 app.use(express.json())
 
-app.get('/', (req, res) => {
-   res.send('get main page!')
-})
 
-app.post('/auth/login', (req, res) => {
-
-   const token = jwt.sign({
-      email: req.body.email,
-      fullName: 'Игорь Бабиков'
-   }, secretKey)
+app.post('/auth/register', registerValidation, (req, res) => {
+   const err = validationResult(req);
+   if (!err.isEmpty()) {
+      return res.status(400).json(err.array())
+   }
 
    res.json({
-      success: true,
-      token
+      success: true
    })
 })
 
